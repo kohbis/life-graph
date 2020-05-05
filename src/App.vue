@@ -1,5 +1,7 @@
 <template lang="pug">
   div#app
+    h1
+      | {{ message }}
     life-chart
   </div>
 </template>
@@ -11,6 +13,11 @@ export default {
   name: 'App',
   components: {
     LifeChart
+  },
+  data: () => {
+    return {
+      message: 'Life Graphs'
+    }
   }
 }
 </script>

@@ -1,41 +1,60 @@
 <template lang="pug">
   div.container
-    .form
-      b-field.happens-setting
-        //- .user-info
-          b-numberinput(
-            id="age"
-            v-model="user.age"
-            name="age"
-            max="120"
-            min="0"
+    b-field.user-info
+      b-select.control(
+        v-model="user.age"
+        placeholder="Select your age"
+        )
+        option(
+          v-for="option in ageRange"
+          :value="option"
+          )
+          | {{ option }}
+    .form(v-if="user.age")
+      b-table.happens(
+        :data="form.happens"
+        )
+        template(slot-scope="props")
+          b-table-column(
+            field="age"
+            label="Age"
+            width="70"
+            numeric
+            centered
             )
-        ul.happens
-          li.happen(v-for="(e, idx) in form.happens")
-            b-numberinput.number-input(
+            b-input(
               disabled
-              controls-position="compact"
-              type="is-primary"
-              v-model="e.age"
-              :max="user.age"
-              min="0"
+              v-model="props.row.age"
               )
-            b-numberinput.number-input(
+          b-table-column(
+            field="score"
+            label="Score"
+            width="140"
+            numeric
+            centered
+            )
+            b-numberinput(
               controls-position="compact"
               type="is-info"
-              v-model="e.score"
+              v-model="props.row.score"
               max="100"
               min="-100"
               step="5"
               )
-            b-input.text-input(
-              v-model="e.detail"
+          b-table-column(
+            field="comment"
+            label="Comment"
+            centered
+            )
+            b-input(
+              v-model="props.row.comment"
               placeholder="コメント"
               )
+          b-table-column
             b-button(
               type="is-light"
               icon-right="minus-circle"
-              @click="deleteHapeen(idx)"
+              @click="deleteHapeen(props.index)"
               )
 
       b-field.happen-add
@@ -50,19 +69,28 @@
           )
         p
           button.button(
-            :disabled="hasAge"
+            :disabled="addableAge"
             @click="addhappen(addedAge)"
             )
             | add
 
       .buttons
-        b-button(type="is-primary" expanded @click="fillData()")
+        b-button(
+          :disabled="!drawable"
+          type="is-primary"
+          expanded
+          @click="fillData()"
+          )
           | Draw
-        b-button(type="is-light" expanded @click="clearData()")
+        b-button(
+          type="is-light"
+          expanded
+          @click="clearData()"
+          )
           | Clear
     .line-chart
       line-chart(
-        v-if="drawable"
+        v-if="showGraph"
         :chart-data="datacollection"
         :options="options"
         )
@@ -78,7 +106,7 @@ export default {
   data: () => {
     return {
       /** グラフ 表示フラグ */
-      drawable: false,
+      showGraph: false,
       /** Chart.js 描画データ */
       datacollection: {},
       /** Chart.js 描画オプション */
@@ -97,32 +125,43 @@ export default {
       },
       /** ユーザー情報 */
       user: {
-        age: 23,
+        age: null,
       },
       /** イベント入力値 */
       form: {
         happens: [
-          { age: 0, score: 0, detail: '' },
+          { age: 0, score: 0, comment: '' },
         ]
       },
       /** 追加イベントの年齢 */
-      addedAge: 0
+      addedAge: 1
     }
   },
   watch: {
   },
   computed: {
-    hasAge() {
+    /** グラフ 描画可否フラグ */
+    drawable() {
+      return this.form.happens.length > 1;
+    },
+    /** イベント追加可能な年齢か */
+    addableAge() {
       return this.form.happens.map(e => e['age']).includes(this.addedAge);
     },
-
+    /** 年齢プルダウン用の配列生成 */
+    ageRange() {
+      const start = 17;
+      const end = 120;
+      return [...Array(end - start + 1).keys()].map(e => e + start);
+    },
+    /** Chart.js tooltips */
     tooltips() {
       return {
         enabled: true,
         displayColors: false,
         callbacks: {
           label: (tooltipItems => {
-            return `${this.form.happens[tooltipItems.index]['detail']}`;
+            return `${this.form.happens[tooltipItems.index]['comment']}`;
           })
         }
       }
@@ -142,22 +181,24 @@ export default {
         ]
       }
       this.options.tooltips = this.tooltips;
-      this.drawable = true;
+      this.showGraph = true;
     },
     /** 初期化 */
     clearData() {
-      this.drawable = false;
+      this.showGraph = false;
       this.datacollection = {};
       this.form.happens = [
-          { age: 0, score: 0, detail: ''},
+          { age: 0, score: 0, comment: ''},
       ];
-      this.addedAge = 0;
+      this.addedAge = 1;
     },
     /** イベント 追加 */
     addhappen(age) {
-      let happen = { age: age, score: 0, detail: '' };
+      let happen = { age: age, score: 0, comment: '' };
       this.form.happens.push(happen);
       this.sortHappens();
+
+      if (age != this.user.age) this.addedAge++;
     },
     /** イベント 削除 */
     deleteHapeen(idx) {
@@ -183,42 +224,36 @@ export default {
 <style lang="scss" scoped>
   .container {
     max-width: 80vw;
+    .user-info {
+      max-width: 30%;
+      margin: 1vh auto;
+      .control {
+        text-align: center;
+      }
+    }
     .form {
-      .happens-setting {
-        .happens {
-          .happen {
-            max-width: 100%;
-            margin: 1% 0;
-            display: flex;
-            .number-input {
-              min-width: 14%;
-              margin: 0 0.5%;
-            }
-            .text-input {
-              min-width: 65%;
-              margin: 0 0.5%;
-            }
-          }
-        }
+      .happens {
+        max-width: 100%;
+        margin: 1vh auto;
       }
       .happen-add {
-        max-width: 30%;
-        margin: auto;
+        max-width: 200px;
+        margin: 2vh auto;
       }
 
       .buttons {
         max-width: 100%;
-        margin: 1% 0;
+        margin: 1vh 0;
         display: flex;
         .button {
-          margin: 0 2.5%;
+          margin: 0 1vw;
           max-width: 45%;
         }
       }
     }
     .line-chart {
       max-width: 100%;
-      margin: 5% auto;
+      margin: 5vh auto;
     }
   }
 </style>
