@@ -52,6 +52,7 @@
               )
           b-table-column
             b-button(
+              :disabled="props.index == 0"
               type="is-light"
               icon-right="minus-circle"
               @click="deleteHapeen(props.index)"
