@@ -2,22 +2,31 @@
   div#app
     h1
       | {{ message }}
-    life-chart
+    loading(v-if="loading")
+    life-chart(v-else)
   </div>
 </template>
 
 <script>
+import Loading from './components/Loading.vue';
 import LifeChart from './components/LifeChart.vue';
 
 export default {
   name: 'App',
   components: {
+    Loading,
     LifeChart
   },
-  data: () => {
+  data() {
     return {
+      loading: true,
       message: 'Life Graphs'
     }
+  },
+  mounted() {
+    setTimeout(() => {
+      this.loading = false;
+    }, 1000);
   }
 }
 </script>
