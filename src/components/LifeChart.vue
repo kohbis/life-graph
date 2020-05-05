@@ -98,13 +98,13 @@
 </template>
 
 <script>
-import LineChart from './LineChart.js';
+import LineChart from '../assets/javascripts/LineChart.js';
 
 export default {
   components: {
     LineChart,
   },
-  data: () => {
+  data() {
     return {
       /** グラフ 表示フラグ */
       showGraph: false,
