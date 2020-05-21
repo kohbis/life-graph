@@ -7,13 +7,14 @@
       )
 </template>
 
-<script>
-import { VueLoading } from 'vue-loading-template'
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
+import { VueLoading } from 'vue-loading-template';
 
-export default {
-  name: 'loading',
+@Component({
   components: {
     VueLoading,
-  },
-}
+  }
+})
+export default class Loading extends Vue {}
 </script>

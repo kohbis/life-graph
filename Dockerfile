@@ -7,15 +7,16 @@ ENV TZ Asia/Tokyo
 ENV HOST 0.0.0.0
 ENV PORT 3000
 
-WORKDIR ${APP_HOME}
-ADD . ${APP_HOME}
-
 RUN apk update \
     && apk upgrade
 
 RUN apk add --update --no-cache \
-      vim curl \
-    && yarn install \
+        git curl
+
+WORKDIR ${APP_HOME}
+ADD . ${APP_HOME}
+
+RUN yarn install \
     && rm -rf /var/cache/apk/*
 
 EXPOSE ${PORT}
