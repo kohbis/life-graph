@@ -48,7 +48,7 @@
             )
             b-input(
               v-model="props.row.comment"
-              placeholder="コメント"
+              placeholder="comment"
               )
           b-table-column
             b-button(
@@ -199,7 +199,7 @@ export default {
       this.form.happens.push(happen);
       this.sortHappens();
 
-      if (age != this.user.age) this.addedAge++;
+      if (age != this.user.age) { this.addedAge++ }
     },
     /** イベント 削除 */
     deleteHapeen(idx) {
