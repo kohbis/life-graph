@@ -1,5 +1,5 @@
 <template lang="pug">
-  div#app
+  #app
     h1
       | {{ message }}
     loading(v-if="loading")
@@ -7,22 +7,21 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
 import Loading from './components/Loading.vue';
 import LifeChart from './components/LifeChart.vue';
 
-export default {
-  name: 'App',
+@Component({
   components: {
     Loading,
-    LifeChart
+    LifeChart,
   },
-  data() {
-    return {
-      loading: true,
-      message: 'Life Graphs'
-    }
-  },
+})
+export default class App extends Vue {
+  private loading: boolean = true;
+  private message: string = 'Life Graphs';
+
   mounted() {
     setTimeout(() => {
       this.loading = false;
@@ -31,7 +30,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

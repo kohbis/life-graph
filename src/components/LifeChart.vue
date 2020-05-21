@@ -93,132 +93,138 @@
       line-chart(
         v-if="showGraph"
         :chart-data="datacollection"
-        :options="options"
+        :chart-options="options"
         )
 </template>
 
-<script>
-import LineChart from '../assets/javascripts/LineChart.js';
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
+import LineChart from './LineChart';
 
-export default {
+type User = {
+  age: number | null;
+}
+type Happen = {
+  age: number;
+  score: number;
+  comment: string;
+}
+type Form = {
+  happens: Happen[];
+}
+
+@Component({
   components: {
     LineChart,
-  },
-  data() {
+  }
+})
+export default class LifeChart extends Vue {
+  /** グラフ 表示フラグ */
+  private showGraph: boolean = false;
+  /** Chart.js 描画データ */
+  private datacollection: Chart.ChartData = {};
+  /** Chart.js 描画オプション */
+  private options: Chart.ChartOptions = {
+    responsive: true,
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            min: -100,
+            max: 100,
+          }
+        }
+      ]
+    },
+    tooltips: {}
+  };
+  /** ユーザー情報 */
+  private user: User = {
+    age: null,
+  };
+  /** イベント入力値 */
+  private form: Form = {
+    happens: [
+      { age: 0, score: 0, comment: '' },
+    ]
+  };
+  /** 追加イベントの年齢 */
+  private addedAge: number = 1;
+
+  /** グラフ 描画可否フラグ */
+  get drawable(): boolean {
+    return this.form.happens.length > 1;
+  }
+  /** イベント追加可能な年齢か */
+  get addableAge(): boolean {
+    return this.form.happens.map(e => e['age']).includes(this.addedAge);
+  }
+  /** 年齢プルダウン用の配列生成 */
+  get ageRange(): number[] {
+    const start = 17;
+    const end = 120;
+    return [...Array(end - start + 1).keys()].map(e => e + start);
+  }
+  /** Chart.js tooltips */
+  get tooltips(): any {
     return {
-      /** グラフ 表示フラグ */
-      showGraph: false,
-      /** Chart.js 描画データ */
-      datacollection: {},
-      /** Chart.js 描画オプション */
-      options: {
-        scales: {
-          yAxes: [
-            {
-              ticks: {
-                min: -100,
-                max: 100
-              }
-            }
-          ]
-        },
-        tooltips: {}
-      },
-      /** ユーザー情報 */
-      user: {
-        age: null,
-      },
-      /** イベント入力値 */
-      form: {
-        happens: [
-          { age: 0, score: 0, comment: '' },
-        ]
-      },
-      /** 追加イベントの年齢 */
-      addedAge: 1
-    }
-  },
-  watch: {
-  },
-  computed: {
-    /** グラフ 描画可否フラグ */
-    drawable() {
-      return this.form.happens.length > 1;
-    },
-    /** イベント追加可能な年齢か */
-    addableAge() {
-      return this.form.happens.map(e => e['age']).includes(this.addedAge);
-    },
-    /** 年齢プルダウン用の配列生成 */
-    ageRange() {
-      const start = 17;
-      const end = 120;
-      return [...Array(end - start + 1).keys()].map(e => e + start);
-    },
-    /** Chart.js tooltips */
-    tooltips() {
-      return {
-        enabled: true,
-        displayColors: false,
-        callbacks: {
-          label: (tooltipItems => {
-            return `${this.form.happens[tooltipItems.index]['comment']}`;
-          })
+      enabled: true,
+      displayColors: false,
+      callbacks: {
+        label: (tooltipItems: any): string => {
+          return `${this.form.happens[tooltipItems.index]['comment']}`;
         }
       }
     }
-  },
-  methods: {
-    /** データセット */
-    fillData() {
-      this.datacollection = {
-        labels: this.form.happens.map(e => e['age']),
-        datasets: [
-          {
-            label: '人生グラフ',
-            lineTension: 0.2,
-            data: this.form.happens.map(e => e['score'])
-          }
-        ]
-      }
-      this.options.tooltips = this.tooltips;
-      this.showGraph = true;
-    },
-    /** 初期化 */
-    clearData() {
-      this.showGraph = false;
-      this.datacollection = {};
-      this.form.happens = [
-          { age: 0, score: 0, comment: ''},
-      ];
-      this.addedAge = 1;
-    },
-    /** イベント 追加 */
-    addhappen(age) {
-      let happen = { age: age, score: 0, comment: '' };
-      this.form.happens.push(happen);
-      this.sortHappens();
-
-      if (age != this.user.age) { this.addedAge++ }
-    },
-    /** イベント 削除 */
-    deleteHapeen(idx) {
-      this.form.happens.splice(idx, 1);
-      this.sortHappens();
-    },
-    /** イベント ソート */
-    sortHappens() {
-      this.form.happens.sort((a, b) => {
-        return a['age'] - b['age'];
-      });
-    },
-    /** スコア値 ランダム生成 */
-    getRandomInt() {
-      // -100 ~ 100
-      return Math.floor(Math.random() * 200 - 100);
-    }
   }
 
+  /** データセット */
+  private fillData(): void {
+    this.datacollection = {
+      labels: this.form.happens.map(e => e['age']),
+      datasets: [
+        {
+          label: 'Life Graph',
+          lineTension: 0.2,
+          data: this.form.happens.map(e => e['score'])
+        }
+      ]
+    }
+    this.options.tooltips = this.tooltips;
+    this.showGraph = true;
+  }
+  /** 初期化 */
+  private clearData(): void {
+    this.showGraph = false;
+    this.datacollection = {};
+    this.form.happens = [
+        { age: 0, score: 0, comment: ''},
+    ];
+    this.addedAge = 1;
+  }
+  /** イベント 追加 */
+  private addhappen(age: number): void {
+    let happen = { age: age, score: 0, comment: '' };
+    this.form.happens.push(happen);
+    this.sortHappens();
+    if (age != this.user.age) { this.addedAge++ }
+  }
+  /** イベント 削除 */
+  private deleteHapeen(idx: number): void {
+    this.form.happens.splice(idx, 1);
+    this.sortHappens();
+  }
+  /** イベント ソート */
+  private sortHappens(): void {
+    this.form.happens.sort((a, b) => {
+      return a['age'] - b['age'];
+    });
+  }
+  /** スコア値 ランダム生成 */
+  private getRandomInt(): number {
+    // -100 ~ 100
+    return Math.floor(Math.random() * 200 - 100);
+  }
 }
 </script>
 
