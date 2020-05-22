@@ -61,5 +61,8 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "engines": {
+    "npm": "please_use_yarn_instead"
+  }
 }
