@@ -3,7 +3,7 @@ name: production
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
 
     steps:
     - name: Checkout
